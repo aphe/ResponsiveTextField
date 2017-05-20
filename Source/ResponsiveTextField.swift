@@ -39,6 +39,12 @@ class ResponsiveTextField: UITextField {
         }
         
         if (textField.text?.isEmpty)! {
+            let _alert:UIAlertController = UIAlertController(title: "FAILED".localize, message: "CANNOT_EMPTY".localize, preferredStyle: .alert)
+            _alert.addAction(UIAlertAction(title: "DONE".localize, style: .cancel,
+                                           handler: { (action) -> Void in
+            }))
+            _alert.show()
+            textField.becomeFirstResponder()
             return
         }
         
@@ -46,6 +52,12 @@ class ResponsiveTextField: UITextField {
         switch textField.keyboardType {
         case .emailAddress:
             if !valid(email: textField.text!) {
+                let _alert:UIAlertController = UIAlertController(title: "FAILED".localize, message: "INVALID_EMAIL_FORMAT".localize, preferredStyle: .alert)
+                _alert.addAction(UIAlertAction(title: "DONE".localize, style: .cancel,
+                                               handler: { (action) -> Void in
+                }))
+                _alert.show()
+                textField.becomeFirstResponder()
                 return
             }
         default:
@@ -77,3 +89,40 @@ class ResponsiveTextField: UITextField {
     
 }
 
+extension UIAlertController {
+    
+    func show() {
+        present(animated: true, completion: nil)
+    }
+    
+    func present(animated: Bool, completion: (() -> Void)?) {
+        if let rootVC = UIApplication.shared.keyWindow?.rootViewController {
+            presentFromController(controller: rootVC, animated: animated, completion: completion)
+        }
+    }
+    
+    private func presentFromController(controller: UIViewController, animated: Bool, completion: (() -> Void)?) {
+        if let presented = controller.presentedViewController {
+            presented.present(self, animated: animated, completion: completion)
+            return
+        }
+        switch controller {
+        case let navVC as UINavigationController:
+            presentFromController(controller: navVC.visibleViewController!, animated: animated, completion: completion)
+            break
+        case let tabVC as UITabBarController:
+            presentFromController(controller: tabVC.selectedViewController!, animated: animated, completion: completion)
+        default:
+            controller.present(self, animated: animated, completion: completion)
+        }
+    }
+}
+
+extension String {
+    var localize:String {
+        guard let mainBundle = Bundle(identifier: Bundle.main.bundleIdentifier!) else {
+            return self
+        }
+        return NSLocalizedString(self, tableName: nil, bundle: mainBundle, value: "", comment: "")
+    }
+}
